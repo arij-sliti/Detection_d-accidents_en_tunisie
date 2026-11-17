@@ -1,0 +1,9 @@
+path: D:/pfa/dataset
+train: images/train
+val: images/val
+
+nc: 3
+names:
+  0: voiture_accident
+  1: zone_impact
+  2: moto_accident

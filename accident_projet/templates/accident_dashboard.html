@@ -1,0 +1,374 @@
+{% extends "layout.html" %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de bord des accidents - Tunisie 2026 | Lean Intelligence</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fc 0%, #e9eef5 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        /* Header moderne avec effet de verre */
+        .glass-header {
+            background: linear-gradient(135deg, #1e2a3e, #0f172a);
+            color: white;
+            padding: 2rem 0;
+            border-radius: 0 0 30px 30px;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        .glass-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 1%, transparent 1%);
+            background-size: 50px 50px;
+            animation: shimmer 60s linear infinite;
+            opacity: 0.3;
+        }
+        @keyframes shimmer {
+            0% { transform: translate(0,0); }
+            100% { transform: translate(50px,50px); }
+        }
+
+        /* Cartes KPI */
+        .kpi-card {
+            background: white;
+            border-radius: 25px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+            border: none;
+            position: relative;
+            overflow: hidden;
+        }
+        .kpi-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 30px rgba(0,0,0,0.1);
+        }
+        .kpi-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        .kpi-value {
+            font-size: 2.8rem;
+            font-weight: 800;
+            margin-bottom: 0.25rem;
+        }
+        .kpi-label {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #6c757d;
+        }
+        .bg-danger-soft { background: linear-gradient(135deg, #fff5f5, #ffe0e0); color: #c0392b; }
+        .bg-dark-soft { background: linear-gradient(135deg, #f0f2f5, #e2e6ea); color: #2c3e50; }
+        .bg-warning-soft { background: linear-gradient(135deg, #fff9e6, #ffefc0); color: #e67e22; }
+        .bg-info-soft { background: linear-gradient(135deg, #e6f7ff, #b3e0ff); color: #2980b9; }
+
+        /* Graphiques */
+        .chart-card {
+            background: white;
+            border-radius: 25px;
+            padding: 1.5rem;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+            transition: all 0.2s;
+        }
+        .chart-title {
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #1e2a3e;
+            border-left: 5px solid #e74c3c;
+            padding-left: 15px;
+        }
+
+        /* Tableau des causes */
+        .cause-table {
+            background: white;
+            border-radius: 25px;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+        }
+        .cause-table thead th {
+            background: #1e2a3e;
+            color: white;
+            font-weight: 600;
+            border: none;
+            padding: 1rem;
+        }
+        .cause-table tbody tr:hover {
+            background: #f8f9fa;
+        }
+        .badge-cause {
+            background: #e74c3c20;
+            color: #e74c3c;
+            padding: 0.4rem 0.8rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        footer {
+            text-align: center;
+            padding: 1.5rem;
+            color: #6c757d;
+            margin-top: 3rem;
+        }
+
+        @media (max-width: 768px) {
+            .kpi-value { font-size: 2rem; }
+            .glass-header h1 { font-size: 1.8rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="glass-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="display-4 fw-bold"><i class="fas fa-chart-line me-3"></i>Accidents de la route en Tunisie</h1>
+                <p class="lead mb-0">Année 2026 · Analyse des causes et statistiques globales</p>
+                <p class="mt-2"><i class="fas fa-map-marker-alt me-2"></i>Données issues des rapports officiels</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <img src="https://cdn-icons-png.flaticon.com/512/2603/2603863.png" alt="Safety" style="width: 80px; opacity: 0.8;">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Cartes KPI -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-3">
+            <div class="kpi-card bg-danger-soft">
+                <div class="kpi-icon"><i class="fas fa-car-crash"></i></div>
+                <div class="kpi-value">{{ stats.total_accidents }}</div>
+                <div class="kpi-label">Accidents enregistrés</div>
+                <small class="text-muted">Toutes causes confondues</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="kpi-card bg-dark-soft">
+                <div class="kpi-icon"><i class="fas fa-skull-crossbones"></i></div>
+                <div class="kpi-value">{{ stats.total_tues }}</div>
+                <div class="kpi-label">Personnes tuées</div>
+                <small class="text-muted">Taux mortalité : {{ stats.taux_mortalite }}%</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="kpi-card bg-warning-soft">
+                <div class="kpi-icon"><i class="fas fa-procedures"></i></div>
+                <div class="kpi-value">{{ stats.total_blesses }}</div>
+                <div class="kpi-label">Blessés</div>
+                <small class="text-muted">{{ stats.moyenne_blesses_par_accident }} / accident</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="kpi-card bg-info-soft">
+                <div class="kpi-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                <div class="kpi-value">{{ stats.cause_max_accidents[:20] }}{% if stats.cause_max_accidents|length > 20 %}…{% endif %}</div>
+                <div class="kpi-label">Cause la plus fréquente</div>
+                <small class="text-muted">{{ stats.causes[0].accidents }} accidents</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Graphique principal : barres des causes -->
+    <div class="row">
+        <div class="col-12">
+            <div class="chart-card">
+                <h4 class="chart-title"><i class="fas fa-chart-bar me-2 text-danger"></i> Nombre d'accidents par cause</h4>
+                <canvas id="accidentsChart" height="120"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Deux graphiques secondaires : tués & blessés -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="chart-card">
+                <h4 class="chart-title"><i class="fas fa-skull me-2 text-secondary"></i> Nombre de tués par cause</h4>
+                <canvas id="tuesChart" height="200"></canvas>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="chart-card">
+                <h4 class="chart-title"><i class="fas fa-band-aid me-2 text-success"></i> Nombre de blessés par cause</h4>
+                <canvas id="blessesChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top 5 causes + tableau complet -->
+    <div class="row g-4">
+        <div class="col-md-5">
+            <div class="chart-card">
+                <h4 class="chart-title"><i class="fas fa-chart-pie me-2 text-info"></i> Top 5 causes (accidents)</h4>
+                <canvas id="pieChart" height="250"></canvas>
+            </div>
+        </div>
+        <div class="col-md-7">
+            <div class="cause-table">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Cause</th>
+                            <th class="text-center">Accidents</th>
+                            <th class="text-center">Tués</th>
+                            <th class="text-center">Blessés</th>
+                            <th class="text-center">Victimes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for cause in stats.causes %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td><span class="badge-cause">{{ cause.label }}</span></td>
+                            <td class="text-center fw-bold">{{ cause.accidents }}</td>
+                            <td class="text-center">{{ cause.tues }}</td>
+                            <td class="text-center">{{ cause.blesses }}</td>
+                            <td class="text-center fw-semibold">{{ cause.total_victimes }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p><i class="fas fa-database"></i> Source : XML cause2026 (1).xml | Année 2026 | Données prévisionnelles</p>
+        <p class="small">SafeTrack - Détection d'accidents IA</p>
+    </footer>
+</div>
+
+<script>
+    // Données passées depuis Flask
+    const labels = {{ stats.labels_json | tojson }};
+    const accidentsData = {{ stats.accidents_json | tojson }};
+    const tuesData = {{ stats.tues_json | tojson }};
+    const blessesData = {{ stats.blesses_json | tojson }};
+    const top5Labels = {{ stats.top_5 | map(attribute='label') | list | tojson }};
+    const top5Accidents = {{ stats.top_5 | map(attribute='accidents') | list | tojson }};
+    const otherAccidents = {{ stats.other_accidents }};
+
+    // Configuration commune
+    const commonOptions = {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+            legend: { position: 'top' },
+            tooltip: { mode: 'index', intersect: false }
+        }
+    };
+
+    // Graphique 1: Accidents par cause (barres)
+    const ctx1 = document.getElementById('accidentsChart').getContext('2d');
+    new Chart(ctx1, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Nombre d\'accidents',
+                data: accidentsData,
+                backgroundColor: 'rgba(231, 76, 60, 0.7)',
+                borderColor: '#c0392b',
+                borderWidth: 1,
+                borderRadius: 8
+            }]
+        },
+        options: {
+            ...commonOptions,
+            scales: { y: { beginAtZero: true, title: { display: true, text: 'Accidents' } } }
+        }
+    });
+
+    // Graphique 2: Tués par cause
+    const ctx2 = document.getElementById('tuesChart').getContext('2d');
+    new Chart(ctx2, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Tués',
+                data: tuesData,
+                backgroundColor: 'rgba(52, 73, 94, 0.7)',
+                borderColor: '#2c3e50',
+                borderWidth: 1
+            }]
+        },
+        options: commonOptions
+    });
+
+    // Graphique 3: Blessés par cause
+    const ctx3 = document.getElementById('blessesChart').getContext('2d');
+    new Chart(ctx3, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Blessés',
+                data: blessesData,
+                backgroundColor: 'rgba(46, 204, 113, 0.7)',
+                borderColor: '#27ae60',
+                borderWidth: 1
+            }]
+        },
+        options: commonOptions
+    });
+
+    // Graphique 4: Camembert Top 5 + Autres
+    const pieLabels = [...top5Labels];
+    const pieData = [...top5Accidents];
+    if (otherAccidents > 0) {
+        pieLabels.push('Autres causes');
+        pieData.push(otherAccidents);
+    }
+    const ctx4 = document.getElementById('pieChart').getContext('2d');
+    new Chart(ctx4, {
+        type: 'pie',
+        data: {
+            labels: pieLabels,
+            datasets: [{
+                data: pieData,
+                backgroundColor: ['#e74c3c', '#f39c12', '#2ecc71', '#3498db', '#9b59b6', '#95a5a6'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'right' },
+                tooltip: { callbacks: { label: (ctx) => `${ctx.label}: ${ctx.raw} accidents (${((ctx.raw / pieData.reduce((a,b)=>a+b,0))*100).toFixed(1)}%)` } }
+            }
+        }
+    });
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+{% endblock %}

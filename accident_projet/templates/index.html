@@ -1,0 +1,676 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="container-fluid px-0">
+    <!-- BANNIÈRE PRINCIPALE -->
+    <div class="position-relative mb-5 p-5 rounded-4 overflow-hidden" style="background: linear-gradient(135deg, #0a2540, #1b4a6e, #2c6e9e); box-shadow: 0 25px 40px -12px rgba(0,0,0,0.3);">
+        <div class="position-relative z-1">
+            <div class="d-flex flex-wrap justify-content-between align-items-center">
+                <div class="text-white">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <span class="badge bg-white bg-opacity-20 rounded-pill px-3 py-1">Vision par Intelligence Artificielle</span>
+                    </div>
+                    <h1 class="display-5 fw-bold mb-2 animate__animated animate__fadeInLeft">
+                        <i class="fas fa-video me-3"></i>Détection d'Accidents
+                    </h1>
+                </div>
+            </div>
+        </div>
+        <div class="position-absolute top-0 end-0 opacity-10">
+            <i class="fas fa-car-crash" style="font-size: 220px;"></i>
+        </div>
+        <div class="position-absolute bottom-0 start-0 opacity-10">
+            <i class="fas fa-chart-line" style="font-size: 150px;"></i>
+        </div>
+    </div>
+
+    <!-- KPI CARDS -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-hover rounded-4 bg-white h-100">
+                <div class="card-body d-flex align-items-center gap-4 p-4">
+                    <div class="rounded-circle bg-primary bg-opacity-10 p-3">
+                        <i class="fas fa-video fs-1 text-primary"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-1 fw-semibold">Analyses lancées (session)</h6>
+                        <h2 class="fw-bold mb-0 display-6 text-primary" id="analysisCount">0</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-hover rounded-4 bg-white h-100">
+                <div class="card-body d-flex align-items-center gap-4 p-4">
+                    <div class="rounded-circle bg-danger bg-opacity-10 p-3">
+                        <i class="fas fa-exclamation-triangle fs-1 text-danger"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-1 fw-semibold">Accidents détectés (session)</h6>
+                        <h2 class="fw-bold mb-0 display-6 text-danger" id="alertCount">0</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-hover rounded-4 bg-white h-100">
+                <div class="card-body d-flex align-items-center gap-4 p-4">
+                    <div class="rounded-circle bg-warning bg-opacity-10 p-3">
+                        <i class="fas fa-skull-crossbones fs-1 text-warning"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-1 fw-semibold">Accidents dangereux (session)</h6>
+                        <h2 class="fw-bold mb-0 display-6 text-warning" id="dangerousCount">0</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-hover rounded-4 bg-white h-100">
+                <div class="card-body d-flex align-items-center gap-4 p-4">
+                    <div class="rounded-circle bg-info bg-opacity-10 p-3">
+                        <i class="fas fa-microchip fs-1 text-info"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-1 fw-semibold">FPS estimé</h6>
+                        <h2 class="fw-bold mb-0 display-6 text-info" id="fps">30</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECTION PRINCIPALE: VIDÉO + FORMULAIRE -->
+    <div class="row g-4 mb-5">
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-xl rounded-4 overflow-hidden">
+                <div class="card-header bg-dark text-white border-0 py-3 px-4">
+                    <i class="fas fa-camera me-2"></i> Flux vidéo en direct
+                    <span class="badge bg-danger ms-2" id="detectionStatus">En attente</span>
+                </div>
+                <div class="card-body p-0 position-relative" style="min-height: 480px; background: #000;">
+                    <img id="stream" src="" alt="Flux vidéo" style="width:100%; display:none;">
+                    <div id="noVideoMsg" class="text-center text-muted py-5">
+                        <i class="fas fa-camera-off fs-1 d-block mb-3"></i>
+                        <p>Aucune vidéo en cours. Lancez une analyse.</p>
+                    </div>
+                    <div id="loading" class="text-center py-4" style="display:none;">
+                        <div class="spinner-border text-primary"></div>
+                        <p class="mt-2">Analyse en cours...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-xl rounded-4">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="fw-bold mb-0"><i class="fas fa-upload me-2 text-primary"></i>Nouvelle analyse</h5>
+                </div>
+                <div class="card-body">
+                    <form id="uploadForm">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Nom de la vidéo</label>
+                            <input type="text" class="form-control form-control-lg rounded-3" id="videoName" required placeholder="Ex: Accident RN1">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Gouvernorat</label>
+                            <select class="form-select form-select-lg rounded-3" id="governorate" required>
+                                <option value="">Sélectionnez...</option>
+                                <option>Ariana</option><option>Béja</option><option>Ben Arous</option><option>Bizerte</option>
+                                <option>Gabès</option><option>Gafsa</option><option>Jendouba</option><option>Kairouan</option>
+                                <option>Kasserine</option><option>Kébili</option><option>Le Kef</option><option>Mahdia</option>
+                                <option>Manouba</option><option>Médenine</option><option>Monastir</option><option>Nabeul</option>
+                                <option>Sfax</option><option>Sidi Bouzid</option><option>Siliana</option><option>Sousse</option>
+                                <option>Tataouine</option><option>Tozeur</option><option>Tunis</option><option>Zaghouan</option>
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Fichier vidéo</label>
+                            <input type="file" class="form-control" id="videoFile" accept="video/*" required>
+                            <small class="text-muted">Le nom du fichier peut contenir le gouvernorat (ex: accident1_benaarous.mp4 → Ben Arous)</small>
+                        </div>
+                        <button type="submit" class="btn btn-gradient w-100 py-2 fw-semibold rounded-pill">
+                            <i class="fas fa-play me-2"></i> Lancer la détection
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CARTE CAUSE PROBABLE -->
+    <div class="card border-0 shadow-xl rounded-4 mb-4">
+        <div class="card-header bg-white border-0 py-3">
+            <h5 class="fw-bold mb-0"><i class="fas fa-search me-2 text-primary"></i>Cause probable de l’accident</h5>
+        </div>
+        <div class="card-body">
+            <p id="causeText" class="fs-5 fw-semibold text-center text-muted">En attente de détection...</p>
+        </div>
+    </div>
+
+    <!-- ALERTES EN DIRECT -->
+    <div class="card border-0 shadow-xl rounded-4">
+        <div class="card-header bg-white border-0 py-3">
+            <h5 class="fw-bold mb-0"><i class="fas fa-bell me-2 text-warning"></i>Alertes en direct</h5>
+        </div>
+        <div class="card-body p-0">
+            <div id="alertsList" class="list-group list-group-flush" style="max-height: 300px; overflow-y: auto;">
+                <div class="list-group-item text-muted text-center py-4">
+                    Aucune alerte pour le moment
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ================= ALERTE SONORE ================= -->
+<audio id="alertAudio" src="/static/sounds/MP3.mp3" preload="auto"></audio>
+<button id="toggleAlertBtn" class="btn btn-sm btn-warning rounded-pill shadow-sm" style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;">
+    <i class="fas fa-volume-up me-1"></i> Alerte sonore <span id="alertStatus">activée</span>
+</button>
+
+<!-- ================= BOUTON ANNULER ALERTE EMAIL ================= -->
+<button id="cancelAlertBtn" class="btn btn-danger rounded-pill shadow-sm" style="position: fixed; bottom: 90px; right: 20px; z-index: 1050; display: none;">
+    <i class="fas fa-ban me-1"></i> Annuler l'alerte (10s)
+</button>
+
+<!-- ================= CHATBOT IA ================= -->
+<button id="chatbotFab" class="btn btn-primary rounded-circle shadow-lg" style="position: fixed; bottom: 160px; right: 20px; width: 56px; height: 56px; z-index: 1050;">
+    <i class="fas fa-robot fs-4"></i>
+</button>
+
+<div class="modal fade" id="chatbotModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog chat-modal modal-dialog-centered" style="max-width: 550px;">
+        <div class="modal-content rounded-4 overflow-hidden">
+            <div class="chat-header d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, #0a2540, #1b4a6e); color: white; padding: 1rem;">
+                <h5 class="mb-0"><i class="fas fa-robot me-2"></i>Assistant Code de la route</h5>
+                <div>
+                    <button id="showHistoryBtn" class="btn btn-sm btn-outline-light me-2" title="Historique">
+                        <i class="fas fa-history"></i>
+                    </button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+            </div>
+            <div id="chatMessages" class="chat-messages" style="height: 320px; overflow-y: auto; background: #f8fafc; padding: 1rem;">
+                <div class="chat-message bot d-flex justify-content-start mb-3">
+                    <div class="chat-bubble bg-white border p-3 rounded-3" style="max-width: 85%; border-bottom-left-radius: 5px;">
+                        Bonjour ! Je réponds à vos questions sur le code de la route tunisien (vitesse, stationnement, alcool, priorités...). Que souhaitez-vous savoir ?
+                    </div>
+                </div>
+            </div>
+            <div id="historyPanel" style="display: none; max-height: 200px; overflow-y: auto; border-top: 1px solid #ddd; background: #f1f5f9; padding: 10px;">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <strong><i class="fas fa-history"></i> Historique des conversations</strong>
+                    <button id="clearHistoryBtn" class="btn btn-sm btn-outline-danger">Tout effacer</button>
+                </div>
+                <div id="historyList">
+                    <p class="text-muted text-center">Chargement...</p>
+                </div>
+            </div>
+            <div class="chat-input-group d-flex gap-2 p-3 border-top bg-white">
+                <input type="text" id="chatInput" class="form-control rounded-pill" placeholder="Écrivez votre question..." autocomplete="off">
+                <button id="chatSendBtn" class="btn btn-primary rounded-pill px-4">Envoyer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .shadow-hover { transition: all 0.25s ease-in-out; }
+    .shadow-hover:hover { transform: translateY(-6px); box-shadow: 0 25px 35px -12px rgba(0,0,0,0.15); }
+    .shadow-xl { box-shadow: 0 20px 35px -10px rgba(0,0,0,0.1); }
+    .btn-gradient { background: linear-gradient(95deg, #1e40af, #2563eb); border: none; transition: all 0.3s ease; }
+    .btn-gradient:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(37,99,235,0.4); }
+    
+    .chat-message.user { display: flex; justify-content: flex-end; }
+    .chat-message.bot { display: flex; justify-content: flex-start; }
+    .user .chat-bubble { background: #2563eb; color: white; border-bottom-right-radius: 5px; }
+    .bot .chat-bubble { border: 1px solid #e2e8f0; border-bottom-left-radius: 5px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+    
+    /* Popup d'alerte visuelle */
+    .alert-popup {
+        position: fixed;
+        top: 80px;
+        right: 20px;
+        z-index: 9999;
+        max-width: 380px;
+        animation: slideInRight 0.3s ease-out;
+    }
+    .alert-card {
+        background: linear-gradient(135deg, #fff0f0 0%, #ffe0e0 100%);
+        border-left: 5px solid #dc2626;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        overflow: hidden;
+    }
+    .alert-header {
+        background: #dc2626;
+        color: white;
+        padding: 12px 16px;
+        font-weight: bold;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .alert-close {
+        cursor: pointer;
+        font-size: 24px;
+        font-weight: bold;
+    }
+    .alert-body {
+        padding: 16px;
+    }
+    .alert-body p {
+        margin-bottom: 8px;
+        font-size: 14px;
+    }
+    .alert-footer {
+        padding: 12px 16px;
+        background: rgba(220,38,38,0.1);
+        text-align: right;
+    }
+    @keyframes slideInRight {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+</style>
+
+<script>
+    let sessionVideoCount = 0;
+    let sessionAccidentCount = 0;
+    let sessionDangerousCount = 0;
+    let activePollings = {};
+    let currentVideoId = null;
+
+    // ---------- ALERTE SONORE ----------
+    let alertEnabled = true;
+    const alertAudio = document.getElementById('alertAudio');
+    const toggleAlertBtn = document.getElementById('toggleAlertBtn');
+    const alertStatusSpan = document.getElementById('alertStatus');
+
+    function playAlertSound() {
+        if (!alertEnabled) return;
+        alertAudio.pause();
+        alertAudio.currentTime = 0;
+        alertAudio.play().catch(e => console.log("Lecture audio bloquée", e));
+    }
+
+    toggleAlertBtn.addEventListener('click', () => {
+        alertEnabled = !alertEnabled;
+        alertStatusSpan.innerText = alertEnabled ? 'activée' : 'désactivée';
+        toggleAlertBtn.innerHTML = alertEnabled 
+            ? '<i class="fas fa-volume-up me-1"></i> Alerte sonore activée' 
+            : '<i class="fas fa-volume-mute me-1"></i> Alerte sonore désactivée';
+    });
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    function addAlert(message, type = 'danger') {
+        const alertsDiv = document.getElementById('alertsList');
+        if (alertsDiv.querySelector('.text-muted')) alertsDiv.innerHTML = '';
+        const alertItem = document.createElement('div');
+        alertItem.className = `list-group-item list-group-item-${type} d-flex justify-content-between align-items-start`;
+        alertItem.innerHTML = `
+            <div>
+                <i class="fas fa-exclamation-circle me-2"></i>
+                <strong>${new Date().toLocaleTimeString()}</strong> - ${message}
+            </div>
+            <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
+        `;
+        alertsDiv.prepend(alertItem);
+    }
+
+    function updateCounters() {
+        document.getElementById('analysisCount').innerText = sessionVideoCount;
+        document.getElementById('alertCount').innerText = sessionAccidentCount;
+        document.getElementById('dangerousCount').innerText = sessionDangerousCount;
+    }
+
+    // --- Mapping gouvernorats ---
+    const governorateMap = {
+        "ariana": "Ariana", "beja": "Béja", "ben arous": "Ben Arous", "benarous": "Ben Arous",
+        "bizerte": "Bizerte", "gabes": "Gabès", "gafsa": "Gafsa", "jendouba": "Jendouba",
+        "kairouan": "Kairouan", "kasserine": "Kasserine", "kebili": "Kébili", "le kef": "Le Kef",
+        "mahdia": "Mahdia", "manouba": "Manouba", "medenine": "Médenine", "monastir": "Monastir",
+        "nabeul": "Nabeul", "sfax": "Sfax", "sidi bouzid": "Sidi Bouzid", "siliana": "Siliana",
+        "sousse": "Sousse", "tataouine": "Tataouine", "tozeur": "Tozeur", "tunis": "Tunis",
+        "zaghouan": "Zaghouan"
+    };
+
+    function autoFillFromFileName(fileName) {
+        const nameWithoutExt = fileName.replace(/\.[^/.]+$/, "");
+        document.getElementById('videoName').value = nameWithoutExt;
+        const lowerName = nameWithoutExt.toLowerCase();
+        let foundGov = "";
+        for (let [key, value] of Object.entries(governorateMap)) {
+            if (lowerName.includes(key)) {
+                foundGov = value;
+                break;
+            }
+        }
+        if (foundGov) {
+            const select = document.getElementById('governorate');
+            for (let i = 0; i < select.options.length; i++) {
+                if (select.options[i].value === foundGov) {
+                    select.selectedIndex = i;
+                    break;
+                }
+            }
+        }
+    }
+
+    document.getElementById('videoFile').addEventListener('change', function(e) {
+        if (e.target.files.length > 0) {
+            autoFillFromFileName(e.target.files[0].name);
+        }
+    });
+
+    // --- Annulation alerte email ---
+    let cancelAlertTimer = null;
+    const cancelAlertBtn = document.getElementById('cancelAlertBtn');
+    let currentCancelVideoId = null;
+
+    function showCancelAlert(videoId) {
+        currentCancelVideoId = videoId;
+        cancelAlertBtn.style.display = 'block';
+        if (cancelAlertTimer) clearTimeout(cancelAlertTimer);
+        cancelAlertTimer = setTimeout(() => {
+            cancelAlertBtn.style.display = 'none';
+            currentCancelVideoId = null;
+        }, 10000);
+    }
+
+    cancelAlertBtn.addEventListener('click', async () => {
+        if (!currentCancelVideoId) return;
+        try {
+            const response = await fetch(`/api/cancel_alert/${currentCancelVideoId}`, { method: 'POST' });
+            const data = await response.json();
+            if (data.success) {
+                addAlert("✅ Alerte email annulée", "info");
+                cancelAlertBtn.style.display = 'none';
+                if (cancelAlertTimer) clearTimeout(cancelAlertTimer);
+                currentCancelVideoId = null;
+            } else {
+                addAlert("❌ Impossible d'annuler l'alerte", "danger");
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    });
+
+    // --- POPUP ALERTE VISUELLE ---
+    function showAlertPopup(location, time, cause) {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'alert-popup';
+        alertDiv.innerHTML = `
+            <div class="alert-card">
+                <div class="alert-header">
+                    <i class="fas fa-exclamation-triangle"></i> 🚨 ALERTE ACCIDENT DANGEREUX
+                    <span class="alert-close" onclick="this.parentElement.parentElement.parentElement.remove()">&times;</span>
+                </div>
+                <div class="alert-body">
+                    <p><i class="fas fa-map-marker-alt"></i> 📍 Localisation: ${escapeHtml(location)}</p>
+                    <p><i class="fas fa-clock"></i> ⏰ Heure: ${escapeHtml(time)}</p>
+                    <p><i class="fas fa-chart-line"></i> ⚠️ Gravité: Élevée</p>
+                    <p><i class="fas fa-envelope"></i> Un email a été envoyé à l'adresse de secours.</p>
+                    <p><i class="fas fa-star"></i> Auto-évaluation: <span id="ratingAuto"></span> étoile(s)</p>
+                </div>
+                <div class="alert-footer">
+                    <button class="btn btn-success btn-sm rounded-pill" onclick="this.parentElement.parentElement.parentElement.remove()">
+                        <i class="fas fa-check-circle"></i> Vérifier
+                    </button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(alertDiv);
+        setTimeout(() => alertDiv.remove(), 15000);
+        return alertDiv;
+    }
+
+    // Convertir proba (0-100) en note de 1 à 5 étoiles
+    function probabilityToRating(proba) {
+        if (proba >= 80) return 5;
+        if (proba >= 60) return 4;
+        if (proba >= 40) return 3;
+        if (proba >= 20) return 2;
+        return 1;
+    }
+
+    // Auto-envoi du feedback
+    async function autoSubmitFeedback(videoId, rating, comment = "") {
+        try {
+            const response = await fetch('/api/feedback', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ video_id: videoId, rating: rating, comment: comment })
+            });
+            const data = await response.json();
+            if (data.success) {
+                console.log(`Auto-feedback enregistré: ${rating} étoiles`);
+            } else {
+                console.error("Erreur auto-feedback:", data);
+            }
+        } catch (err) {
+            console.error("Erreur lors de l'envoi auto-feedback:", err);
+        }
+    }
+
+    // --- Historique du chatbot ---
+    async function loadChatHistory() {
+        try {
+            const response = await fetch('/api/chatbot/history');
+            const history = await response.json();
+            const historyList = document.getElementById('historyList');
+            if (history.length === 0) {
+                historyList.innerHTML = '<p class="text-muted text-center">Aucun historique</p>';
+            } else {
+                let html = '';
+                for (let item of history) {
+                    html += `
+                        <div class="mb-2 p-2 border-bottom bg-white rounded">
+                            <div class="fw-bold text-primary">Q: ${escapeHtml(item.question)}</div>
+                            <div class="small text-dark">R: ${escapeHtml(item.answer)}</div>
+                            <div class="text-muted small">${new Date(item.timestamp).toLocaleString()}</div>
+                        </div>
+                    `;
+                }
+                historyList.innerHTML = html;
+            }
+        } catch (err) {
+            console.error(err);
+            document.getElementById('historyList').innerHTML = '<p class="text-danger">Erreur chargement</p>';
+        }
+    }
+
+    async function clearChatHistory() {
+        if (!confirm("Voulez-vous vraiment effacer tout l'historique des conversations ?")) return;
+        try {
+            const response = await fetch('/api/chatbot/history/clear', { method: 'DELETE' });
+            if (response.ok) {
+                await loadChatHistory();
+                alert("Historique effacé.");
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Erreur lors de la suppression.");
+        }
+    }
+
+    // --- Polling ---
+    function startPolling(videoId, videoName) {
+        if (activePollings[videoId]) return;
+        const interval = setInterval(async () => {
+            try {
+                const res = await fetch('/api/history');
+                const videos = await res.json();
+                const thisVideo = videos.find(v => v.id === videoId);
+                if (thisVideo && thisVideo.accident_count === 1 && !window[`accidentCounted_${videoId}`]) {
+                    window[`accidentCounted_${videoId}`] = true;
+                    sessionAccidentCount++;
+                    playAlertSound();
+                    if (thisVideo.is_dangerous === 1) {
+                        sessionDangerousCount++;
+                        addAlert(`⚠️ Accident DANGEREUX détecté dans "${videoName}"`, "warning");
+                        showCancelAlert(videoId);
+                        const popup = showAlertPopup(thisVideo.governorate, new Date().toLocaleString(), thisVideo.cause);
+                        // Récupération de la prédiction de satisfaction
+                        const predRes = await fetch(`/api/predict_satisfaction/${videoId}`);
+                        const predData = await predRes.json();
+                        let rating = 3; // valeur par défaut
+                        if (predData.prediction !== null) {
+                            rating = probabilityToRating(predData.prediction);
+                            const ratingSpan = popup.querySelector('#ratingAuto');
+                            if (ratingSpan) ratingSpan.innerText = rating;
+                        }
+                        await autoSubmitFeedback(videoId, rating, "Auto-évaluation système");
+                    } else {
+                        addAlert(`🚗 Accident non dangereux détecté dans "${videoName}"`, "info");
+                        const predRes = await fetch(`/api/predict_satisfaction/${videoId}`);
+                        const predData = await predRes.json();
+                        let rating = 3;
+                        if (predData.prediction !== null) {
+                            rating = probabilityToRating(predData.prediction);
+                        }
+                        await autoSubmitFeedback(videoId, rating, "Auto-évaluation système (non dangereux)");
+                    }
+                    const cause = thisVideo.cause || "Cause non déterminée";
+                    document.getElementById('causeText').innerHTML = `<i class="fas fa-car-crash me-2"></i>${cause}`;
+                    document.getElementById('causeText').className = "fs-5 fw-semibold text-danger";
+                    updateCounters();
+                    document.getElementById('detectionStatus').innerText = "Accident détecté !";
+                    document.getElementById('detectionStatus').className = "badge bg-warning ms-2";
+                    clearInterval(interval);
+                    delete activePollings[videoId];
+                }
+            } catch (err) {
+                console.error("Polling error", err);
+            }
+        }, 2000);
+        activePollings[videoId] = interval;
+        window.currentVideoId = videoId;
+    }
+
+    // --- Formulaire upload ---
+    document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const videoName = document.getElementById('videoName').value;
+        const governorate = document.getElementById('governorate').value;
+        const fileInput = document.getElementById('videoFile');
+        if (!videoName || !governorate || !fileInput.files[0]) {
+            addAlert("Veuillez remplir tous les champs", "warning");
+            return;
+        }
+        const formData = new FormData();
+        formData.append('video', fileInput.files[0]);
+        formData.append('video_name', videoName);
+        formData.append('governorate', governorate);
+
+        document.getElementById('loading').style.display = 'block';
+        document.getElementById('noVideoMsg').style.display = 'none';
+        document.getElementById('causeText').innerHTML = "Analyse en cours...";
+        document.getElementById('causeText').className = "fs-5 fw-semibold text-muted";
+        try {
+            const response = await fetch('/start_analysis', { method: 'POST', body: formData });
+            const data = await response.json();
+            document.getElementById('loading').style.display = 'none';
+            if (data.status === 'success') {
+                const videoId = data.video_id;
+                sessionVideoCount++;
+                updateCounters();
+                window[`accidentCounted_${videoId}`] = false;
+                document.getElementById('detectionStatus').innerText = "Analyse en cours...";
+                document.getElementById('detectionStatus').className = "badge bg-info ms-2";
+                const streamImg = document.getElementById('stream');
+                streamImg.src = `/video_feed/${videoId}?t=${Date.now()}`;
+                streamImg.style.display = 'block';
+                document.getElementById('noVideoMsg').style.display = 'none';
+                addAlert(`Analyse lancée pour "${videoName}" (${governorate})`, "success");
+                startPolling(videoId, videoName);
+            } else {
+                addAlert("Erreur: " + data.message, "danger");
+            }
+        } catch (err) {
+            document.getElementById('loading').style.display = 'none';
+            addAlert("Erreur de connexion au serveur", "danger");
+        }
+    });
+
+    // --- FPS simulé ---
+    setInterval(() => {
+        const fps = Math.floor(Math.random() * (35 - 25 + 1) + 25);
+        document.getElementById('fps').innerText = fps;
+    }, 2000);
+
+    // --- Chatbot avec historique ---
+    document.addEventListener('DOMContentLoaded', function() {
+        const chatbotFab = document.getElementById('chatbotFab');
+        const chatbotModalEl = document.getElementById('chatbotModal');
+        let chatbotModal = null;
+        if (typeof bootstrap !== 'undefined') {
+            chatbotModal = new bootstrap.Modal(chatbotModalEl);
+        } else {
+            console.warn("Bootstrap non chargé");
+            chatbotModal = { show: () => chatbotModalEl.style.display = 'block', hide: () => chatbotModalEl.style.display = 'none' };
+        }
+        chatbotFab.addEventListener('click', () => chatbotModal.show());
+        const chatMessages = document.getElementById('chatMessages');
+        const chatInput = document.getElementById('chatInput');
+        const chatSendBtn = document.getElementById('chatSendBtn');
+
+        function addChatMessage(text, isUser) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message ${isUser ? 'user' : 'bot'}`;
+            messageDiv.innerHTML = `<div class="chat-bubble p-3 rounded-3">${escapeHtml(text)}</div>`;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        async function sendChatMessage() {
+            const question = chatInput.value.trim();
+            if (!question) return;
+            addChatMessage(question, true);
+            chatInput.value = '';
+            try {
+                const response = await fetch('/api/chatbot/ask', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ question: question })
+                });
+                const data = await response.json();
+                addChatMessage(data.answer, false);
+            } catch (error) {
+                addChatMessage('Désolé, le service est momentanément indisponible.', false);
+            }
+        }
+
+        chatSendBtn.addEventListener('click', sendChatMessage);
+        chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendChatMessage(); });
+
+        // Historique
+        const showHistoryBtn = document.getElementById('showHistoryBtn');
+        const historyPanel = document.getElementById('historyPanel');
+        const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+        let historyVisible = false;
+
+        showHistoryBtn.addEventListener('click', () => {
+            if (historyVisible) {
+                historyPanel.style.display = 'none';
+                historyVisible = false;
+            } else {
+                loadChatHistory();
+                historyPanel.style.display = 'block';
+                historyVisible = true;
+            }
+        });
+
+        clearHistoryBtn.addEventListener('click', clearChatHistory);
+    });
+</script>
+{% endblock %}

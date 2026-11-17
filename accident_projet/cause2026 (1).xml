@@ -1,0 +1,61 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<items>
+
+<item>
+<labelle>السياقة في حالة تعب</labelle><accidents>1</accidents><tues>2</tues><blesses>2</blesses>
+</item>
+<item>
+<labelle>انفصال عجلة</labelle><accidents>1</accidents><tues>1</tues><blesses>0</blesses>
+</item>
+<item>
+<labelle>انفلاق عجلة</labelle><accidents>4</accidents><tues>2</tues><blesses>7</blesses>
+</item>
+<item>
+<labelle>اختراق الضوء الاحمر</labelle><accidents>5</accidents><tues>0</tues><blesses>12</blesses>
+</item>
+<item>
+<labelle>فتح باب</labelle><accidents>8</accidents><tues>2</tues><blesses>6</blesses>
+</item>
+<item>
+<labelle>السير ليلا بدون انارة</labelle><accidents>11</accidents><tues>8</tues><blesses>7</blesses>
+</item>
+<item>
+<labelle>السياقة بدون رخصة</labelle><accidents>11</accidents><tues>3</tues><blesses>13</blesses>
+</item>
+<item>
+<labelle>السير في اتجاه محجر</labelle><accidents>14</accidents><tues>1</tues><blesses>26</blesses>
+</item>
+<item>
+<labelle>السياقة في حالة سكر</labelle><accidents>31</accidents><tues>12</tues><blesses>47</blesses>
+</item>
+<item>
+<labelle>المجاوزة الممنوعة</labelle><accidents>31</accidents><tues>12</tues><blesses>52</blesses>
+</item>
+<item>
+<labelle>السير الى الوراء</labelle><accidents>32</accidents><tues>2</tues><blesses>39</blesses>
+</item>
+<item>
+<labelle>عدم احترام علامة قف</labelle><accidents>40</accidents><tues>7</tues><blesses>55</blesses>
+</item>
+<item>
+<labelle>عدم ملازمة اليمين</labelle><accidents>67</accidents><tues>34</tues><blesses>123</blesses>
+</item>
+<item>
+<labelle>المداهمة</labelle><accidents>67</accidents><tues>14</tues><blesses>99</blesses>
+</item>
+<item>
+<labelle>تغيير اتجاه</labelle><accidents>68</accidents><tues>25</tues><blesses>86</blesses>
+</item>
+<item>
+<labelle>عدم احترام الاولوية</labelle><accidents>105</accidents><tues>12</tues><blesses>140</blesses>
+</item>
+<item>
+<labelle>شق الطريق</labelle><accidents>134</accidents><tues>35</tues><blesses>122</blesses>
+</item>
+<item>
+<labelle>السرعة</labelle><accidents>294</accidents><tues>130</tues><blesses>400</blesses>
+</item>
+<item>
+<labelle>السهو وعدم الانتباه</labelle><accidents>348</accidents><tues>52</tues><blesses>415</blesses>
+</item>
+</items>
